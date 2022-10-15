@@ -1,6 +1,12 @@
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+import openpyxl
+from datetime import datetime, timedelta
+
+wookbook = openpyxl.load_workbook("REPORTE_PORTERIA_121022.xlsx")
+# Define variable to read the active sheet:
+worksheet = wookbook.active
 
 # Use a service account.
 # quitar credenciales en firebase console -> proyecto -> configuracion de proyecto -> cuentas de servicio -> SDK Firebase admin -> Generar nueva clave privada
@@ -10,14 +16,32 @@ app = firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-# todo: Esto debe hacerse en un ciclo recorriendo el archivo excel
-doc_ref = db.collection(u'MEMBERS').document(u'123')
-doc_ref.set({
+# Archivo columnas ID-SOCIO-APELLIDO_NOMBRE-EDAD-NRO_CI-CATEGORIA-MES CUOTA
+for i in range(7, worksheet.max_row):
+    # CI persona
+    if worksheet[f'F{i}'].value:
+        cedula = worksheet[f'F{i}'].value
+    else:
+        cedula = worksheet[f'C{i}'].value
+    # al dia o no
+    if worksheet[f'H{i}'].value:
+        fecha_al_dia = datetime.now() - timedelta(days=60)
+        al_dia = str(datetime.strptime(worksheet[f'H{i}'].value, '%d/%m/%Y') < fecha_al_dia).lower()
+    else:
+        al_dia = 'false'
+    # nombre y apellido
+    nombre_apellido_list = worksheet[f'D{i}'].value.split(' ')
+    nombre = f'{nombre_apellido_list[-1]} {nombre_apellido_list[-2]}'
+    apellido = ' '.join(nombre_apellido_list[:-2])
+    # nro socio
+    nro_socio = worksheet[f'C{i}'].value
+    doc_ref = db.collection(u'MEMBERS').document(f'{cedula}')
+    doc_ref.set({
         "created_by": "python_script",
-        "id_member": "4333",
-        "is_defaulter": "false", # calcular en base a la fecha
-        "name": "ACOSTA  F.",
-        "surname": "asdf",
+        "id_member": nro_socio,
+        "is_defaulter": al_dia,
+        "name": nombre,
+        "surname": apellido,
         "photo": "",
         "type": "Socio",
-})
+    })
