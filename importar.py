@@ -35,13 +35,15 @@ for i in range(7, worksheet.max_row):
     apellido = ' '.join(nombre_apellido_list[:-2])
     # nro socio
     nro_socio = worksheet[f'C{i}'].value
-    doc_ref = db.collection(u'MEMBERS').document(f'{cedula}')
-    doc_ref.set({
+    doc_ref = db.collection(u'MEMBERS')
+    doc_ref.add({
         "created_by": "python_script",
-        "id_member": nro_socio,
+        "id_member": str(nro_socio),
         "is_defaulter": al_dia,
         "name": nombre,
         "surname": apellido,
         "photo": "",
         "type": "Socio",
+        "fecha_vencimiento": "",
+        "ci": str(cedula)
     })
