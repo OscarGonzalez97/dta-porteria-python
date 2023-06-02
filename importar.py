@@ -4,13 +4,13 @@ from firebase_admin import firestore
 import openpyxl
 from datetime import datetime, timedelta
 
-wookbook = openpyxl.load_workbook("REPORTE_PORTERIA_121022.xlsx")
+wookbook = openpyxl.load_workbook("ReportePorteria.xlsx")
 # Define variable to read the active sheet:
 worksheet = wookbook.active
 
 # Use a service account.
 # quitar credenciales en firebase console -> proyecto -> configuracion de proyecto -> cuentas de servicio -> SDK Firebase admin -> Generar nueva clave privada
-cred = credentials.Certificate('porteria-dta-test-firebase-adminsdk-b7ap4-93a77e21af.json')
+cred = credentials.Certificate('porteria-dta-firebase-adminsdk-hml1j-55255f2fb1.json')
 
 app = firebase_admin.initialize_app(cred)
 
@@ -19,20 +19,19 @@ db = firestore.client()
 # Archivo columnas ID-SOCIO-APELLIDO_NOMBRE-EDAD-NRO_CI-CATEGORIA-MES CUOTA
 for i in range(7, worksheet.max_row):
     # CI persona
-    if worksheet[f'F{i}'].value:
-        cedula = worksheet[f'F{i}'].value
+    if worksheet[f'G{i}'].value:
+        cedula = worksheet[f'G{i}'].value
     else:
         cedula = worksheet[f'C{i}'].value
     # al dia o no
-    if worksheet[f'H{i}'].value:
+    if worksheet[f'I{i}'].value:
         fecha_al_dia = datetime.now() - timedelta(days=60)
         al_dia = str(datetime.strptime(worksheet[f'H{i}'].value, '%d/%m/%Y') < fecha_al_dia).lower()
     else:
         al_dia = 'false'
     # nombre y apellido
-    nombre_apellido_list = worksheet[f'D{i}'].value.split(' ')
-    nombre = f'{nombre_apellido_list[-1]} {nombre_apellido_list[-2]}'
-    apellido = ' '.join(nombre_apellido_list[:-2])
+    nombre = worksheet[f'E{i}'].value
+    apellido = worksheet[f'D{i}'].value
     # nro socio
     nro_socio = worksheet[f'C{i}'].value
     doc_ref = db.collection(u'MEMBERS')
